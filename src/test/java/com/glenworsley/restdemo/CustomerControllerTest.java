@@ -9,7 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.glenworsley.restdemo.CustomerFixture.createCustomer;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,7 +47,7 @@ class CustomerControllerTest {
         Customer savedCustomer = new Customer();
         when(customerRepository.save(customer)).thenReturn(savedCustomer);
         Customer returnedCustomer = customerController.newCustomer(customer);
-        assertThat(returnedCustomer.equals(savedCustomer));
+        assertThat(returnedCustomer, is(equalTo(customer)));
     }
 
     @Test
@@ -52,7 +55,7 @@ class CustomerControllerTest {
         Customer customer = new Customer();
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         Customer returnedCustomer = customerController.getCustomer(1L);
-        assertThat(returnedCustomer.equals(customer));
+        assertThat(returnedCustomer, is(equalTo(customer)));
     }
 
     @Test()
@@ -64,23 +67,15 @@ class CustomerControllerTest {
 
     @Test
     void replaceCustomerPassesCorrectDetailsToRepository() {
-        Customer customer = createTestCustomer(1L, "bob", "down");
-        Customer updatedCustomer = createTestCustomer(1L, "stan", "dup");
+        Customer customer = createCustomer(1L, "bob", "down");
+        Customer updatedCustomer = createCustomer(1L, "stan", "dup");
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(customerRepository.save(any(Customer.class))).thenReturn(new Customer());
-        customerController.replaceCustomer(customer, 1L);
+        customerController.replaceCustomer(updatedCustomer, 1L);
         ArgumentCaptor<Customer> argumentCaptor = ArgumentCaptor.forClass(Customer.class);
         verify(customerRepository).save(argumentCaptor.capture());
-        assertThat(argumentCaptor.getValue().getFirstName().equals("stan"));
-        assertThat(argumentCaptor.getValue().getLastName().equals("dup"));
-    }
-
-    private Customer createTestCustomer(long id, String firstName, String lastName) {
-        Customer customer = new Customer();
-        customer.setId(id);
-        customer.setFirstName(firstName);
-        customer.setLastName(lastName);
-        return customer;
+        assertThat(argumentCaptor.getValue().getFirstName(), is(equalTo("stan")));
+        assertThat(argumentCaptor.getValue().getLastName(), is(equalTo("dup")));
     }
 
     @Test
