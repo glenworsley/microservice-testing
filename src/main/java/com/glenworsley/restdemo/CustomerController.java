@@ -1,6 +1,7 @@
 package com.glenworsley.restdemo;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,18 +12,17 @@ public class CustomerController {
 
     private final CustomerRepository customerRepository;
 
-    //aggregate end-point
     @GetMapping("/customers")
     List<Customer> all() {
         return customerRepository.findAll();
     }
 
     @PostMapping("/customers")
+    @ResponseStatus(HttpStatus.CREATED)
     Customer newCustomer(@RequestBody Customer customer) {
         return customerRepository.save(customer);
     }
 
-    //single item end-point
     @GetMapping("/customers/{id}")
     Customer getCustomer(@PathVariable Long id) {
         return customerRepository.findById(id).orElseThrow(() -> new CustomerNotFoundException(id));
